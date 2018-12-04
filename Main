@@ -1,0 +1,228 @@
+package 跳马问题;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.util.ArrayList;
+
+public class Main extends Frame{
+	
+	Graphics g;
+	private static final long serialVersionUID = 1L;
+	class MyThread extends Thread{
+		@Override
+		public void run() {
+			super.run();
+			//while(true){
+				try {
+					repaint();
+					sleep(100);
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+			//}
+		}
+		
+	}
+	Image buffImage = null;
+	//update消除闪烁
+    @Override
+	public void update(Graphics g) {
+		if (buffImage == null) {
+			buffImage = this.createImage(1000, 1000);
+		}
+		Graphics bg = buffImage.getGraphics();
+		bg.clearRect(0, 0, getWidth(), getHeight());
+		paint(bg);
+		bg.dispose();
+		g.drawImage(buffImage, 0, 0, null);
+    }
+	Main(){
+		this.setTitle("跳马问题");
+		this.setSize(900, 900);
+		this.setVisible(true);
+		this.setLocationRelativeTo(null);
+		this.addWindowListener(new WindowListener() {
+			
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO 自动生成的方法存根
+			}
+			
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO 自动生成的方法存根
+				
+			}
+			
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO 自动生成的方法存根
+				
+			}
+			
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO 自动生成的方法存根
+				
+			}
+			
+			@Override
+			public void windowClosing(WindowEvent e) {
+				// TODO 自动生成的方法存根
+				System.exit(0);
+			}
+			
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO 自动生成的方法存根
+				System.exit(0);
+			}
+			
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO 自动生成的方法存根
+				
+			}
+		});
+		
+		new MyThread().start();
+	}
+	
+	@Override
+	public void paint(Graphics g) {
+		super.paint(g);
+		drawBg(g);
+	}
+	
+	private ArrayList<HousePoint> wayList1=new ArrayList<HousePoint>();//马走过的点
+	private ArrayList<HousePoint> wayList2=new ArrayList<HousePoint>();//马走过的点
+	private ArrayList<HousePoint> wayList3=new ArrayList<HousePoint>();//马走过的点
+	private ArrayList<HousePoint> wayList4=new ArrayList<HousePoint>();//马走过的点
+	private void drawBg(Graphics g){//画出棋盘
+		g.setColor(Color.RED);
+		for(int x=100;x<=800;x+=100){//水平坐标
+			for(int y=100;y<=800;y+=100){//竖直坐标
+				g.drawLine(x, y, 800,y);//画水平线
+				g.drawLine(x, y, x, 800);//画竖直线
+				g.drawString("●", x-5, y+4);
+				g.drawString("("+x+","+y+")", x, y);
+			}
+		}
+		//画出起点
+		g.setColor(Color.BLACK);
+		g.setFont(new Font("微软雅黑", Font.BOLD, 30));
+		g.drawString("●马", 100-10, 100+10);
+		g.drawString("●终点", 800-10, 300+10);
+		//开始画出路径
+		Point startPoint =new Point(100, 100);
+		Point endPoint=new Point(800,300);
+		//g.drawLine(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+		wayList1.add(new HousePoint(startPoint.x, startPoint.y, 1));//将起点加入集合
+		drawWay(g, startPoint, endPoint);
+	}
+
+	HousePoint nextHousePoint;//下一个落脚点
+	HousePoint nowHousePoint;//现在马的落脚点
+	private int director=1;
+	private void drawWay(Graphics g,Point startPoint,Point endPoint){//画出路径
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			
+			e.printStackTrace();
+		}
+		//设置画笔
+		g.setColor(Color.BLACK);
+		g.setFont(new Font("微软雅黑", Font.BOLD, 20));
+		for(int i=0;i<4;i++){
+			nowHousePoint=wayList1.get(wayList1.size()-1);//现在的马位置，方向
+			//下一步有四种走法
+			switch (nowHousePoint.director) {
+			case 1:
+				nextHousePoint=new HousePoint(nowHousePoint.x+100,nowHousePoint.y-200,1);
+				if(nextHousePoint.x>800||nextHousePoint.y<100){
+					System.out.println("1》预判下一步越界,不能执行下一步");
+					nowHousePoint.director=2;
+				}else {
+					wayList1.add(nextHousePoint);
+					//画出路径
+					g.drawLine(nowHousePoint.x, nowHousePoint.y, nextHousePoint.x, nextHousePoint.y);
+					System.err.println("执行下一步》1");
+					drawWay(g, startPoint, endPoint);
+				}
+				break;
+			case 2:
+				nextHousePoint=new HousePoint(nowHousePoint.x+200,nowHousePoint.y-100,1);
+				if(nextHousePoint.x>800||nextHousePoint.y<100){
+					System.out.println("2》预判下一步越界,不能执行下一步");
+					nowHousePoint.director=3;
+				}else {
+					wayList1.add(nextHousePoint);
+					//画出路径
+					g.drawLine(nowHousePoint.x, nowHousePoint.y, nextHousePoint.x, nextHousePoint.y);
+					System.err.println("执行下一步》2");
+					drawWay(g, startPoint, endPoint);
+				}
+				break;
+			case 3:
+				nextHousePoint=new HousePoint(nowHousePoint.x+200,nowHousePoint.y+100,1);
+				if(nextHousePoint.x>800||nextHousePoint.y>900){
+					System.out.println("3》预判下一步越界,不能执行下一步");
+					nowHousePoint.director=4;
+				}else {
+					wayList1.add(nextHousePoint);
+					//画出路径
+					g.drawLine(nowHousePoint.x, nowHousePoint.y, nextHousePoint.x, nextHousePoint.y);
+					System.err.println("执行下一步》3");
+					drawWay(g, startPoint, endPoint);
+				}
+				break;
+			case 4:
+				nextHousePoint=new HousePoint(nowHousePoint.x+100,nowHousePoint.y+200,1);
+				if(nextHousePoint.x>800||nextHousePoint.y>800){
+					System.out.println("4》预判下一步越界,不能执行下一步");
+					//移除最后两个点
+					wayList1.remove(wayList1.size()-1);
+					wayList1.remove(wayList1.size()-1);
+					wayList1.remove(wayList1.size()-1);
+					nowHousePoint=wayList1.get(wayList1.size()-1);//现在的马位置，方向
+					nowHousePoint.director++;
+					drawWay(g, startPoint, endPoint);
+				}else {
+					wayList1.add(nextHousePoint);
+					//画出路径
+					g.drawLine(nowHousePoint.x, nowHousePoint.y, nextHousePoint.x, nextHousePoint.y);
+					System.err.println("执行下一步》4");
+					drawWay(g, startPoint, endPoint);
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	
+	//定义每一个点对象
+	class HousePoint {
+		int x;//当前x
+		int y;//当前y
+		int director;//下一步走的方向
+		public HousePoint(int x, int y, int director) {
+			super();
+			this.x = x;
+			this.y = y;
+			this.director = director;
+		}
+	}
+	public static void main(String[] args) {
+		new Main();
+	}
+	
+
+}
